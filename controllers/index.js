@@ -1,5 +1,6 @@
 const cubeController = require('./cube');
 const accessoryController = require('./accessory');
+const userController = require('./user');
 
 function notFound(req, res, next) {
   const err = new Error('Page not found!');
@@ -25,6 +26,7 @@ function about(req, res, next) {
 module.exports = {
   cubeController,
   accessoryController,
+  userController,
   notFound,
   errorHandler,
   about

@@ -1,9 +1,12 @@
 const mongoose = require('mongoose');
+const bcrypt = require('bcrypt');
+const appConfig = require('../app-config');
+
 const userSchema = mongoose.Schema({
-  id: mongoose.Types.ObjectId,
   username: {
     type: String,
-    required: true
+    required: true,
+    unique: true
   },
   password: {
     type: String,
@@ -11,4 +14,30 @@ const userSchema = mongoose.Schema({
   }
 });
 
-module.export = mongoose.model('User', userSchema);
+userSchema.methods = {
+  matchPassword: function (password) {
+    return bcrypt.compare(password, this.password);
+  }
+}
+
+userSchema.pre('save', function (next) {
+  if (this.isModified('password')) {
+    bcrypt
+      .genSalt(appConfig.saltRounds)
+      .then(salt => {
+        return bcrypt.hash(this.password, salt);
+      })
+      .then(hash => {
+        this.password = hash;
+        next();
+      })
+      .catch(err => {
+        next(err);
+        return;
+      })
+  } else {
+    next();
+  }
+});
+
+module.exports = mongoose.model('User', userSchema);
